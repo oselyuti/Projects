@@ -1,0 +1,6 @@
+Class 4/21
+Proportional system. Multi-member district models. 
+Party list system - districts have the same number of representatives.
+Voters Rank-order candidates. Once the quota for a particular candidate is reached, the candidate is selected. Good for independent candidates if enough people are willing to rank them fairly high. John Stuart Mill favored this approach as a good one for legislative deliberation.
+Mixed systems: some members selected on a party-list model basis. Some on 
+Cumulative voting system: each voter gets to cast as many votes as there are spots for election. Helps to facilitate smaller parties. A minority can focus on some issues through casting all their votes for one or two candidates
