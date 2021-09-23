@@ -1,0 +1,36 @@
+in operator, substitute find with binary_search
+
+return (rand()%140 +1);
+
+int random_number() {
+	return (rand() %140) +1;
+
+}
+
+
+bool is_odd(int v){
+	return (v%2}
+
+int main() {
+
+
+vector <int> numbers;
+vector <bool>  odd;
+
+srand(140);
+numbers.resize(140);
+odd.resize(140);
+
+std::generate (numbers.begin(), numbers.end() random_number);
+std::transform (numbers.begin(), numbers.end(), odd.begin(), is_odd);
+
+
+std::count(primes.begin(), primes.end(), true);
+std::sort(numbers.begin(), numbers.end());
+
+//unique returns an iterator to a first duplicate element
+
+std::list<int>::iterator it; ?not sure
+numbers.erase (it, numbers.end() )
+
+
