@@ -1,7 +1,6 @@
 
 import sys
 import getopt
-import math
 
 
 class node:
@@ -16,36 +15,68 @@ class node:
         self.neighbors = []
         self.prev = None
         self.visited = 0
-        self.distance_to_goal = math.inf
-    
-def print_path (visited):
-    print ("Path: [", sep = "", end = '')
-    n = node()
-    for n in visited:
-        print ("(",n.i,", ", n.j, ")", sep = '', end = '')#add a comma between the tuples
-    print (']', sep ='')
-    print ("Traversed_to_goal:", len(visited))
 
 
 
 class PathPlanner:
-    def bfs(root, grid, node_grid, num_rows, num_cols,goal_node):
-        found_path = False
+    #def __init__(self, root, node_grid, ):
+        
+    def dfs(self, root):
+        if root.i == -1 and root.j == -1:
+            print("root is not initialized")
+            return
+        stack = [root]  # using list as a stack
+        while len(stack) > 0:
+            cur_node = stack.pop()
+            if cur_node.left != None:
+                stack.append(cur_node.left)
+            elif cur_node.top != None:
+                stack.append(cur_node.top)
+            elif cur_node.right != None:
+                stack.append(cur_node.right)
+            elif cur_node.bottom != None:
+                stack.append(cur_node.bottom)
+
+
+"""
+    def bfs(self, root, grid, node_grid):
+
+        if root.i == -1 and root.j == -1:
+            print("root is not initialized")
+            return
+        stack = [root]  # using list as a stack
+        while len(stack) > 0:
+            cur_node = stack.pop()
+            if cur_node.left != None:
+                stack.append(cur_node.left)
+            elif cur_node.top != None:
+                stack.append(cur_node.top)
+            elif cur_node.right != None:
+                stack.append(cur_node.right)
+            elif cur_node.bottom != None:
+                stack.append(cur_node.bottom)
+"""
+
+""" 
+    def bfs(self, root):
 
         queue = []
         queue.append(root)
-        traversed = 0
+        number_traversed = 0
         cur_node = root
 
         # cur_node.i == goal_node.i and cur_node.j == goal_node.j) == False and
         while len(queue) > 0:
             cur_node = queue.pop(0)
             cur_node.visited = 1
+
             node_grid[cur_node.i][cur_node.j] = cur_node
-            traversed += 1
+
+            #print (cur_node.i,cur_node.j)
+            number_traversed += 1
 
             if (cur_node.i == goal_node.i and cur_node.j == goal_node.j) == True:
-                found_path= True
+                print("Found the path to the goal")
                 break
 
             if (cur_node.i + 1) < num_rows:
@@ -59,6 +90,7 @@ class PathPlanner:
                         node_grid[cur_node.i+1][cur_node.j] = cur_node.bottom
                         queue.append(cur_node.bottom)
                         cur_node.bottom.prev = cur_node
+
                         #print ("went DOWN")
 
             if (cur_node.j + 1 < num_cols):
@@ -72,6 +104,7 @@ class PathPlanner:
                         node_grid[cur_node.i][cur_node.j+1] = cur_node.right
                         queue.append(cur_node.right)
                         cur_node.right.prev = cur_node
+
                         #print ("went RIGHT")
 
             if (cur_node.i - 1) >= 0 and ((cur_node.top) and cur_node.top.visited == 0):
@@ -97,110 +130,33 @@ class PathPlanner:
                         queue.append(cur_node.left)
                         cur_node.left.prev = cur_node
                         #print ("went RIGHT")
+        print("Traversed : ", number_traversed)
 
+        n == node()
         n = node_grid[goal_node.i][goal_node.j]
         route = []
+        traversed = 0
         while n:
+            traversed += 1
             route.append(n)
             n = n.prev
         route.reverse()
 
-        return found_path, route, traversed
+        for n in route:
+            print(n.i, n.j)
+        print("BFS Number from stat to goal: ", traversed)
 
-        #for n in route:
-        #    print(n.i, n.j)
-        #print("BFS Number from stat to goal: ", traversed)
-
-
-    def dfs (node_grid,root,goal_node):
-        visited = []
-        found_path = False
-        traversed =0
-        n = root #index use only
-        stack = [node_grid[root.i][root.j] ]
-        while len(stack) > 0:
-            n = stack.pop()
-            n.visited = 1
-            traversed+=1
-
-            if n not in visited:
-                visited.append(n)
-            
-            if (n.i == goal_node.i and n.j == goal_node.j):
-                found_path = True
-                break
-
-            #push the neighboring cells that are viable options on the stack to be considered
-            list_of_cells = node_grid[n.i][n.j].neighbors
-            i = node ()
-            for i in list_of_cells:
-                if (i and i.visited == 0 and i.value ==0):
-                    stack.append(i)
-
-        return found_path, visited, traversed
-
-
-    def astar(node_grid,root, goal_node):
-        visited = []
-        found_path = False
-        traversed=0
-        n = root #index use only
-        stack = [node_grid[root.i][root.j] ]
-        while len(stack) > 0:
-            n = stack.pop()
-            n.visited = 1
-            traversed+=1
-            if n not in visited:
-                visited.append(n)
-            if (n.i == goal_node.i and n.j == goal_node.j):
-                found_path = True
-                break
-
-            #prepare for A*
-            list_of_cells = node_grid[n.i][n.j].neighbors
-            for i in range(4):
-                loc = list_of_cells[i]
-                if loc != None and loc.visited != 1 and loc.value != 1:# cell exists has distance can be calculated
-                    loc.distance_to_goal = math.sqrt( ((loc.i - goal_node.i)**2) + ((loc.j- goal_node.j)**2) )
-
-            #rearrange the list of neighbors for the cell n to reflect the order in which to try neighboring cells
-            #START STATE: left,top,right, bottom
-            for i in range(4):
-                low_priority = n.neighbors[i]
-                if low_priority: #check whether the neighbor is within the grid
-                    for k in range(4):
-                        higher_priority = n.neighbors[k]
-                        if higher_priority:
-                            if (low_priority.distance_to_goal < higher_priority.distance_to_goal and i!=k and i<k):#if there is more than 1 optimal path, check the priority
-                                #the node with higher priority will have a higher index
-                                #swap places if the node at the start of the list has lesser distance to goal than the one at the end(bottom, for example)
-                                #the element with the lowest priority and the lowest distance then bubbles up to the top of the neighbor list
-                                tmp = higher_priority
-                                n.neighbors[k] = low_priority
-                                n.neighbors[i] = tmp
-    
-            
-            
-            list_of_cells = node_grid[n.i][n.j].neighbors
-            #the cells to be explored in order of the smallest (g+f) first, meaning they will pushed on stack last
-            list_of_cells = node_grid[n.i][n.j].neighbors
-            for i in list_of_cells:
-                if (i and i.visited == 0 and i.value ==0):
-                    stack.append(i)
-
-        return found_path, visited, traversed
-            
-        
+"""
 
 
 
 
-
-def main(argv):
+def main_dfs(argv):
     filename = ''
     start_node = ''
     goal_node = ''
     search_type = ''
+
     try:
         opts, args = getopt.getopt(
             argv, "", ["input=", "start=", "goal=", "search="])
@@ -210,6 +166,12 @@ def main(argv):
     if (len(sys.argv) != 9):
         print("Incorrect number of arguments")
         sys.exit(2)
+
+    #print (argv[1])
+
+    #print (argv[2])
+    #print (argv[3])
+
     for opt, arg in opts:
         if opt in "--input":
             filename = arg
@@ -222,7 +184,6 @@ def main(argv):
         else:
             print("Usage: main.py --input -start --goal --search")
             sys.exit(3)
-
 
     num_rows = 0
     num_cols = 0
@@ -253,6 +214,19 @@ def main(argv):
         sys.exit()
     goal_node = node(int(s[0],), int(s[1]))
 
+    if search_type in "BFS":
+        # execute bfs
+        i = 0
+    elif search_type == "DFS":
+        i = 0
+    elif search_type == "astar" or search_type == "A*":
+        i = 0
+    elif search_type == "ALL":
+        i = 0
+    else:
+        print("Unknown search_type has been specified. Exiting...")
+        sys.exit()
+
     
 
     # create a grid
@@ -268,10 +242,15 @@ def main(argv):
             if j == ',' or j == '\n':
                 continue
             grid[row_index][col_index] = int(j)
+
             # make a grid of nodes too
             new_node = node(row_index, col_index)
             new_node.value = int(j)
+
+            
+            
             node_grid[row_index][col_index] = new_node
+            
 
             col_index += 1
         row_index += 1
@@ -286,13 +265,13 @@ def main(argv):
 
 
     #initialize all of the grid nodes to know about their neighbors
+    
     n = node()
     for line in node_grid:
         for n in line:
-            n.bottom=None
-            n.right = None
-            n.top = None
-            n.left = None
+            #print (n.i,n.j)
+
+
             if (n.i+1) < num_rows:
                 n.bottom = node_grid[n.i+1][n.j]
             if (n.i-1) >=0:
@@ -300,44 +279,51 @@ def main(argv):
             if (n.j+1) < num_cols:
                 n.right = node_grid[n.i][n.j+1]
             if (n.j-1) >=0:
-                n.left = node_grid[n.i][n.j-1]
-            
+                n.left = node_grid[i][n.j-1]
             
             n.neighbors = [n.left, n.top, n.right, n.bottom]
+            #n.neighbors.append (n.left);n.neighbors.append (n.top);n.neighbors.append(n.right);n.neighbors.append(n.bottom)            
+
             
         
-    if search_type == "BFS":
-        result = PathPlanner.bfs(root, grid, node_grid, num_rows, num_cols,goal_node)
+            
     #start dfs
-    elif search_type == "DFS":
-        result = PathPlanner.dfs(node_grid,root,goal_node)
-    #A*
-    #g(n) = 1 for all, so I will discard it
-    elif search_type == "astar":
-        result = PathPlanner.astar(node_grid,root,goal_node)
-    else:
-        print ("Unknown search type has been specified")
-        sys.exit()
+    if search_type == "DFS":
+        visited = []
+        found_path = False
+        n = root #index use only
+        stack = [node_grid[root.i][root.j] ]
+        while len(stack) > 0:
+            n = stack.pop()
+            n.visited = 1
+
+            if n not in visited:
+                visited.append(n)
+            
+            if (n.i == goal_node.i and n.j == goal_node.j):
+                found_path = True
+                break
+
+            #push the neighboring cells that are viable options on the stack to be considered
+            list_of_cells = node_grid[n.i][n.j].neighbors
+            i = node ()
+            for i in list_of_cells:
+                if (i and i.visited == 0 and i.value ==0):
+                    stack.append(i)
+            
         
+        if found_path:
+            print ("Path: [", sep = "", end = '')
+            n = node()
+            for n in visited:
+                print ("(",n.i,", ", n.j, ")", sep = '', end = '')#add a comma between the tuples
+            print (']', sep ='')
+            print ("Traversed_to_goal:", len(visited))
+        else:
+            print("No path has been found to your goal node.")
+            sys.exit()
+            
 
+if __name__ == "main_dfs":
+    main_dfs(sys.argv[1:])
 
-    path_exists = False
-    visited = []
-    total_nodes_traversed =0
-    if (result[0] == True):
-            path_exists = True
-            visited = result[1]
-            total_nodes_traversed = result[2]
-    
-
-
-
-    if path_exists:
-        print_path (visited)
-        print ("Traversed:", total_nodes_traversed)
-    else:
-        print("No path has been found to your goal node.")
-        sys.exit()
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
