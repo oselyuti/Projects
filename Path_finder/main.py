@@ -1,4 +1,5 @@
 
+from os import stat_result
 import sys
 import getopt
 import math
@@ -19,10 +20,15 @@ class node:
         self.distance_to_goal = math.inf
     
 def print_path (visited):
+    i =1
     print ("Path: [", sep = "", end = '')
     n = node()
     for n in visited:
-        print ("(",n.i,", ", n.j, ")", sep = '', end = '')#add a comma between the tuples
+        if (i == len (visited)):
+            print ((n.i, n.j), end='')
+        else:
+            print ((n.i, n.j) ,",", sep = '' , end = '')#add a comma between the tuples
+        i+=1
     print (']', sep ='')
     print ("Traversed_to_goal:", len(visited))
 
@@ -111,6 +117,7 @@ class PathPlanner:
         #    print(n.i, n.j)
         #print("BFS Number from stat to goal: ", traversed)
 
+                
 
     def dfs (node_grid,root,goal_node):
         visited = []
@@ -118,8 +125,10 @@ class PathPlanner:
         traversed =0
         n = root #index use only
         stack = [node_grid[root.i][root.j] ]
-        while len(stack) > 0:
+        while len(stack) > 0: 
             n = stack.pop()
+            print ("Now considering : ",n.i,n.j)
+            
             n.visited = 1
             traversed+=1
 
@@ -128,7 +137,10 @@ class PathPlanner:
             
             if (n.i == goal_node.i and n.j == goal_node.j):
                 found_path = True
+
                 break
+                
+                
 
             #push the neighboring cells that are viable options on the stack to be considered
             list_of_cells = node_grid[n.i][n.j].neighbors
@@ -136,11 +148,58 @@ class PathPlanner:
             for i in list_of_cells:
                 if (i and i.visited == 0 and i.value ==0):
                     stack.append(i)
+                    print ("Stack appended: ", i.i, i.j, end= ' ')
+
+            print ()
+            #PathPlanner.dfs (node_grid, n, goal_node)
 
         return found_path, visited, traversed
 
+    def deepening_dfs (node_grid, root, goal_node):
+        start = node_grid[root.i][root.j]
+        cur_depth = 1
+        goal = False
+        goal_i = goal_node.i; goal_j = goal_node.j
+        
+        list_of_neighbors_at_this_level = [start]
+        start.visited = 1
+        nodes_traversed = 0
 
-    def astar(node_grid,root, goal_node):
+        while (goal == False):  
+            cur_depth+=1
+            print(cur_depth)
+            for individual in list_of_neighbors_at_this_level:
+                #print ("\nIndividual:",individual.i, individual.j)
+                #print ("Their neighbors:")
+                #get their list of adjacent cells
+                for neighbor_of_neighbor in individual.neighbors:
+                    nodes_traversed+=1
+                    if (neighbor_of_neighbor and neighbor_of_neighbor.visited == 0 and neighbor_of_neighbor.value ==0):
+                        list_of_neighbors_at_this_level.append(neighbor_of_neighbor)
+                        neighbor_of_neighbor.visited = 1
+                        neighbor_of_neighbor.prev = individual
+                        #print (neighbor_of_neighbor.i, neighbor_of_neighbor.j)
+                        if neighbor_of_neighbor.i == goal_i and neighbor_of_neighbor.j == goal_j:
+                            #print ("found\n")
+                            goal=True
+                            break
+                list_of_neighbors_at_this_level.remove(individual)#make sure only the new connections are in the list
+            #print(n.i, n.j)
+            #the KEY IS TO GO THROUGH EVERY ELEMENT OF THE STACK AT ONE cur_depth INSTEAD OF GOING STEP BY STEP AND POPPING FROM THE STACK ONE BY ONE
+            
+            #one level at a time
+        #print (nodes_traversed)   
+        n = node_grid[goal_node.i][goal_node.j]
+        route = []
+        while n:
+            route.append(n)
+            n = n.prev
+        route.reverse()
+
+        return goal, route, nodes_traversed    
+
+
+    def astar(node_grid,root, goal_node):#DOES SOME WEIRD SHIT 0,0 TO 5,4 GRID2
         visited = []
         found_path = False
         traversed=0
@@ -159,6 +218,7 @@ class PathPlanner:
             #prepare for A*
             list_of_cells = node_grid[n.i][n.j].neighbors
             for i in range(4):
+
                 loc = list_of_cells[i]
                 if loc != None and loc.visited != 1 and loc.value != 1:# cell exists has distance can be calculated
                     loc.distance_to_goal = math.sqrt( ((loc.i - goal_node.i)**2) + ((loc.j- goal_node.j)**2) )
@@ -304,13 +364,18 @@ def main(argv):
             
             
             n.neighbors = [n.left, n.top, n.right, n.bottom]
+            if (search_type =="DFS"):
+                n.neighbors = [n.bottom,n.right,n.top,n.left]
             
         
     if search_type == "BFS":
         result = PathPlanner.bfs(root, grid, node_grid, num_rows, num_cols,goal_node)
     #start dfs
     elif search_type == "DFS":
-        result = PathPlanner.dfs(node_grid,root,goal_node)
+        result = PathPlanner.deepening_dfs(node_grid, root, goal_node)
+        #discovered= [];count =0
+        #PathPlanner.DFS (node_grid,  node_grid[root.i][root.j], discovered, count, goal_node)
+        #result = PathPlanner.dfs(node_grid,root,goal_node)
     #A*
     #g(n) = 1 for all, so I will discard it
     elif search_type == "astar":
