@@ -1,9 +1,13 @@
 
+"""Alex Selyutin
+The following code allows the user to find the shortest path from source to destination privided by the user with three different methods:
+DFS,BFS and a DFS-based A* search with Eucledian heuristic
+"""
+
 from os import stat_result
 import sys
 import getopt
 import math
-
 
 class node:
     def __init__(self, i=-1, j=-1):
@@ -20,6 +24,10 @@ class node:
         self.distance_to_goal = math.inf
     
 def print_path (visited):
+    """ Given the list visited, prints the elements in the list in proper format
+        @param visited: list of nodes traversed from source to destination
+        @return nothing. Outputs to stdout
+        """
     i =1
     print ("Path: [", sep = "", end = '')
     n = node()
@@ -27,25 +35,46 @@ def print_path (visited):
         if (i == len (visited)):
             print ((n.i, n.j), end='')
         else:
-            print ((n.i, n.j) ,",", sep = '' , end = '')#add a comma between the tuples
+            print ((n.i, n.j) ,", ", sep = '' , end = '')#add a comma between the tuples
         i+=1
     print (']', sep ='')
     #print ("Traversed_to_goal:", len(visited))
 
-    def print_grid(grid):
-        for line in grid:
-            for i in line:
-                print (i, end=',')
-            print()
-
-
+def print_grid(grid):
+    """ Given the 2D array grid, prints the elements in the list in proper format
+        @param grid: array of ints containing 0 or 1
+        @return nothing. Outputs to stdout
+        """
+    for line in grid:
+        for i in line:
+            print (i, end=',')
+        print()
 
 
 
 class PathPlanner:
 
-    def print_info (result):
+    def set_up(self, filename, num_rows, num_cols, search_type):
+        """ Given the 5 parameters, prepares the grid for traversal
+        @param filename - name of the file with grid info
+        @param num_rows,num_cols - info about the two from the file
+        @param search_type - specified by the user
+        @param goal_node - node () datatype with i and j that are goal
+        @return initialized grid of nodes
+        """
+        created_node_grid, grid = PathPlanner.create_node_grid (filename, num_rows, num_cols)
+        PathPlanner.initialize_node_grid (created_node_grid, num_rows, num_cols, search_type)
+    
+        return created_node_grid, grid
 
+
+
+
+    def print_info (self,result):
+        """ Given the list result, prints the path and the #of nodes traversed (total)
+        @param result: list [bool found_result][visited_nodes_list][int num_traversed]
+        @return nothing. Outputs to stdout
+        """
         path_exists = False
         visited = []
         total_nodes_traversed =0
@@ -62,6 +91,11 @@ class PathPlanner:
 
 
     def create_node_grid (filename, num_rows, num_cols):
+        """ Given the lfilename, and the size of the grid, create another grid with nodes being allocated for each cell
+        @param node_grid - grid rows*cols with elements being nodes
+        @param num_rows, num_cols -numbers received from the file itself
+        @return newly made node_grid 
+        """
         file = open(filename, 'r')
         row_index = 0
         col_index = 0
@@ -87,6 +121,11 @@ class PathPlanner:
         return node_grid, grid
     
     def initialize_node_grid (node_grid, num_rows, num_cols, search_type):
+        """ Given the node grid, make sure each node's members contain useful data
+        @param filename: node_grid - grid rows*cols with elements being nodes
+        @param num_rows, num_cols -numbers received from the file itself
+        @return nothing
+        """
         n = node()
         for line in node_grid:
             for n in line:
@@ -110,6 +149,11 @@ class PathPlanner:
 
         
     def compute_dist_for_all (node_grid, goal_node,):
+        """ Given the node grid, compute distances to goal
+        @param node_grid - grid rows*cols with elements being nodes
+        @param goal_node = node with coordinates user specified as destination
+        @return updated node_grid
+        """
         for line in node_grid:
             for element in line:
         #prepare for A*
@@ -120,12 +164,17 @@ class PathPlanner:
                         loc.distance_to_goal = math.sqrt( ((loc.i - goal_node.i)**2) + ((loc.j- goal_node.j)**2) )
 
                 #rearrange the list of neighbors for the cell n to reflect the order in which to try neighboring cells
-                #START STATE: # (bottom->right->top->left)                
-
-                
+                #START STATE: # (bottom->right->top->left) 
         return node_grid
 
-    def bfs(root, grid, node_grid, num_rows, num_cols,goal_node):
+    def bfs(self, root, grid, node_grid, num_rows, num_cols,goal_node):
+        """ Given the node grid,find the shortest path to goal with Breadth-First Search
+        @param node_grid - grid rows*cols with elements being nodes
+        @param num_rows, num_cols -numbers received from the file itself
+        @param root = node with coordinates user specified as source
+        @param goal_node = node with coordinates user specified as destination
+        @return
+        """
         found_path = False
         if root == goal_node:
             found_path = True
@@ -205,31 +254,14 @@ class PathPlanner:
 
         return found_path, route, traversed
 
-    def dfs (cell, visited, goal_node,found):
-        if cell:
-            visited.append (cell)
-            print ( (cell.i,cell.j),end ='')
-            if (cell.i == goal_node.i and cell.j == goal_node.j ):
-                found = True
-                cur_path = len(visited)
-                print (" ",cur_path )
-                return True
-            visited.append (cell)
 
-            #neighbor_copy.pop(0)
-            for i in range (4):
-                if i == 0:
-                    for neighbor in cell.neighbors:
-                        if neighbor not in visited :
-                                if (PathPlanner.dfs (neighbor, visited, goal_node, found)):
-                                        return True            
-            return False
-
-
-    """
-    
-    """
-    def deepening_dfs (node_grid, root, goal_node):
+    def deepening_dfs (self, node_grid, root, goal_node):
+        """ Given the node grid,find the shortest path to goal with Depth-First Search
+        @param node_grid - grid rows*cols with elements being nodes
+        @param root = node with coordinates user specified as source
+        @param goal_node = node with coordinates user specified as destination
+        @return
+        """
         start = node_grid[root.i][root.j]
         cur_depth = 1
         
@@ -250,8 +282,7 @@ class PathPlanner:
             while (len(list_of_neighbors_at_this_level)>0):
                 individual = list_of_neighbors_at_this_level[0]
                 individual.visited = 1
-                nodes_traversed+=1
-                
+                nodes_traversed+=1    
                 #get their list of adjacent cells
                 if (individual and individual.value ==0):
                     for i in individual.neighbors:
@@ -277,10 +308,14 @@ class PathPlanner:
         return goal, route, nodes_traversed    
             
 
-    """
-    
-    """
-    def deepening_dfs_astar (node_grid,root, goal_node):
+    def deepening_dfs_astar (self, node_grid,root, goal_node):
+        """ Given the node grid,find the shortest path to goal with A* Search based on Depth-First Search
+         and Eucledian distance heuristic
+        @param node_grid - grid rows*cols with elements being nodes
+        @param root = node with coordinates user specified as source
+        @param goal_node = node with coordinates user specified as destination
+        @return
+        """
         start = node_grid[root.i][root.j]
         goal = False
         goal_i = goal_node.i; goal_j = goal_node.j
@@ -300,14 +335,12 @@ class PathPlanner:
             while (len(list_of_neighbors_at_this_level)>0):
                 if goal==True:
                     break
-                
                 individual = list_of_neighbors_at_this_level[0]
                 individual.visited = 1
-                nodes_traversed+=1
-
                 #get their list of adjacent cells
                 if (individual and individual.value ==0):
                      #ADD SOME STUFF TO COME OUT OF IT IF GOING NOWHERE
+                    nodes_traversed+=1
                     not_better=0
                     for s in individual.neighbors:
                         if (s and s.distance_to_goal > cur_lowest_distance_to_goal ):
@@ -321,7 +354,6 @@ class PathPlanner:
                             list_of_neighbors_at_this_level.remove(individual)
                             list_of_neighbors_at_this_level.insert(0, individual.prev)
                             individual = individual.prev                            
-
 
                     for i in individual.neighbors: 
                         if i :
@@ -351,39 +383,30 @@ class PathPlanner:
 
 
 
-
-"""
-    
-"""
 def main(argv):
-    filename = ''
-    start_node = ''
-    goal_node = ''
-    search_type = ''
+    """
+    given the filename with [0,1] elements, source, destination, and a search_type
+    the program will make use of PathFinder class and find the shortest path between the two points specified by the user
+    in the command line, if it exists
+    @param argv will take in all the arguments specified by the user.
+    """
+    filename = '';start_node = '';goal_node = '';search_type = ''
     try:
         opts, args = getopt.getopt(
             argv, "", ["input=", "start=", "goal=", "search="])
     except getopt.GetoptError:
-        print("main.py --input -start --goal --search")
-        sys.exit(2)
+        print("main.py --input -start --goal --search DFS/BFS/astar");sys.exit(2)
     if (len(sys.argv) != 9):
-        print("Incorrect number of arguments")
-        sys.exit(2)
+        print("Incorrect number of arguments");sys.exit(2)
     for opt, arg in opts:
-        if opt in "--input":
-            filename = arg
-        elif opt in ("--start"):
-            start_node = arg
-        elif opt in ("--goal"):
-            goal_node = arg
-        elif opt in ("--search"):
-            search_type = arg
+        if opt in "--input": filename = arg
+        elif opt in ("--start"): start_node = arg
+        elif opt in ("--goal"): goal_node = arg
+        elif opt in ("--search"): search_type = arg
         else:
-            print("Usage: main.py --input -start --goal --search")
-            sys.exit(3)
+            print("Usage: main.py --input -start --goal --search  DFS/BFS/astar");sys.exit(3)
 
-    num_rows = 0
-    num_cols = 0
+    num_rows = 0;num_cols = 0
     file = open(filename, 'r')
     for line in file:
         num_rows += 1
@@ -397,63 +420,48 @@ def main(argv):
 
     s = start_node.split(',')
     if (s[0].isdigit() == False or int(s[0]) >= num_rows or (s[1].isdigit() == False or int(s[1]) >= num_cols)):
-        print("Start coordinate is invalid or is beyond the size of the grid")
-        sys.exit()
+        print("Start coordinate is invalid or is beyond the size of the grid");sys.exit()
     root = node(int(s[0],), int(s[1]))
 
     s = goal_node.split(',')
     if (s[0].isdigit() == False or int(s[0]) >= num_rows or (s[1].isdigit() == False or int(s[1]) >= num_cols)):
-        print("Goal coordinate is invalid or is beyond the size of the grid")
-        sys.exit()
+        print("Goal coordinate is invalid or is beyond the size of the grid");sys.exit()
     goal_node = node(int(s[0],), int(s[1]))
 
-
-
-    #Start working with a class
-    node_grid, grid = PathPlanner.create_node_grid (filename, num_rows, num_cols)# create a grid
+    Find_Path = PathPlanner()
+    node_grid,grid = Find_Path.set_up (filename, num_rows, num_cols, search_type)
     # Consider a case when a goal_node is an obstacle. The program then gracefully quits
     if (grid[goal_node.i][goal_node.j]) == 1:
         print("The goal coordinate provided is an obstacle and cannot be reached")
         sys.exit()
 
-
-
-    #PathPlanner.print_grid(grid)
-
-    #initialize all of the grid nodes to know about their neighbors
-    PathPlanner.initialize_node_grid (node_grid, num_rows, num_cols, search_type)
     if search_type == "BFS":
-        result = PathPlanner.bfs(root, grid, node_grid, num_rows, num_cols,goal_node)
+        result = Find_Path.bfs(root, grid, node_grid, num_rows, num_cols,goal_node)
     elif search_type == "DFS":
-        result = PathPlanner.deepening_dfs(node_grid, root, goal_node)        
+        result = Find_Path.deepening_dfs(node_grid, root, goal_node)        
     elif search_type == "astar": #g(n) = 1 for all, so I will discard it
-        result = PathPlanner.deepening_dfs_astar(node_grid,root,goal_node)
- 
-
-
+        result = Find_Path.deepening_dfs_astar(node_grid,root,goal_node)
     elif search_type == "ALL":
-        #first one is ready to go
-        result_bfs = PathPlanner.bfs(root, grid, node_grid, num_rows, num_cols,goal_node)
+        result_bfs = Find_Path.bfs(root, grid, node_grid, num_rows, num_cols,goal_node)
 
-        #second need a newly made grid with no modifications
-        node_grid, grid = PathPlanner.create_node_grid (filename, num_rows, num_cols)# create a grid
-        PathPlanner.initialize_node_grid (node_grid, num_rows, num_cols, search_type)#initialize all of the grid nodes to know about their neighbors
-        result_dfs = PathPlanner.deepening_dfs(node_grid, root, goal_node)
+        node_grid,grid = Find_Path.set_up (filename, num_rows, num_cols, search_type)
+        result_dfs = Find_Path.deepening_dfs(node_grid, root, goal_node)
 
-        node_grid, grid = PathPlanner.create_node_grid (filename, num_rows, num_cols)# create a grid
-        PathPlanner.initialize_node_grid (node_grid, num_rows, num_cols, search_type)
-        result_astar = PathPlanner.deepening_dfs_astar(node_grid, root,goal_node)
+        node_grid,grid = Find_Path.set_up (filename, num_rows, num_cols, search_type)
+        result_astar = Find_Path.deepening_dfs_astar(node_grid, root,goal_node)
+        
         results = [result_bfs, result_dfs, result_astar]
 
         for r in results:
-            PathPlanner.print_info (r)
+            Find_Path.print_info (r)
+
     else:
         print ("Unknown search type has been specified")
         sys.exit()
 
     if search_type != "ALL":
-        PathPlanner.print_info(result)
-        print ()
+        Find_Path.print_info(result)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
